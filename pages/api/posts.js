@@ -14,7 +14,7 @@ const broadcastMessage = (data) => {
 }
 
 const validateBody = body => {
-  return typeof body?.id === 'string' && typeof body?.text === 'string'
+  return typeof body?.id === 'string' && typeof body?.text === 'string' && body?.text.length <= 280 && body?.text.length > 0
 }
 
 const handler = async (req, res) => {
