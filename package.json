@@ -9,9 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@braid-protocol/client": "^1.0.0",
+    "@braid-protocol/server": "^1.0.0",
+    "@chakra-ui/react": "1.6.5",
+    "@emotion/react": "^11.4.1",
+    "@emotion/styled": "^11.3.0",
+    "axios": "^0.22.0",
+    "crypto": "^1.0.1",
+    "framer-motion": "^4.1.17",
     "next": "11.1.2",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "react-textarea-autosize": "^8.3.3"
   },
   "devDependencies": {
     "eslint": "7.32.0",
