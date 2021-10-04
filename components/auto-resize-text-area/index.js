@@ -2,7 +2,9 @@ import React, { forwardRef } from 'react'
 import { Textarea } from '@chakra-ui/react'
 import ResizeTextarea from 'react-textarea-autosize'
 
-const AutoResizeTextarea = forwardRef((props, ref) => {
+// We should upgrade ResizeTextArea with Draft JS in the future.
+// Currently we are unable to apply multiple styles to the text.
+const AutoResizeTextarea = forwardRef(({ maxCharacters = 280, ...props }, ref) => {
   return (
     <Textarea
       minH="unset"

@@ -67,6 +67,7 @@ const CreatePostModal = ({
                 value={text}
                 ref={initialRef}
                 onChange={onInputChange}
+                maxCharacters={maxCharacters}
               />
               {text !== '' && (
                 <Box>

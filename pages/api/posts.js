@@ -38,10 +38,9 @@ const handler = async (req, res) => {
       return
     }
     const { id, text } = req.body
-    if (posts.length === 10) {
-      posts[0] = { id, createdAt: getDate(), text }
-    } else {
-      posts.unshift({ id, createdAt: getDate(), text })
+    posts.unshift({ id, createdAt: getDate(), text })
+    if (posts.length > 10) {
+      posts.pop()
     }
     broadcastMessage(posts)
     res.status(200).json({ message: 'Success' })

@@ -5,7 +5,9 @@ import axios from 'axios'
 import { subscribe } from '@braid-protocol/client'
 import { autoId } from 'lib/crypto'
 import CreatePost from 'components/create-post'
+// import AutoResizeTextAreaDraftJs from 'components/auto-resize-text-area-draftjs'
 import Post from 'components/post'
+// import Card from 'components/card'
 
 const useSubscription = (route, defaultValue) => {
   const [data, setData] = useState(defaultValue)
@@ -53,6 +55,9 @@ const Home = () => {
       <main>
         <VStack spacing={4}>
           <Heading as="h1">Dreams and aspirations</Heading>
+          {/*<Card p={4}>*/}
+            {/*<AutoResizeTextAreaDraftJs />*/}
+          {/*</Card>*/}
           <CreatePost addPost={handleAddPost} />
           {cards.map(({ id, text, date }) => (
             <Post key={id} id={id} text={text} date={date} />
