@@ -65,6 +65,7 @@ const CreatePost = ({ addPost }) => {
               onClose={onClose}
               onInputChange={handleInputChange}
               onSubmit={handleSubmit}
+              maxCharacters={280}
             />
           </HStack>
         </HStack>
