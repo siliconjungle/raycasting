@@ -4894,7 +4894,7 @@ unicount@1.1:
   resolved "https://registry.yarnpkg.com/unicount/-/unicount-1.1.0.tgz#396a3df661c19675a93861ac878c2c9c0042abf0"
   integrity sha512-RlwWt1ywVW4WErPGAVHw/rIuJ2+MxvTME0siJ6lk9zBhpDfExDbspe6SRlWT3qU6AucNjotPl9qAJRVjP7guCQ==
 
-unicount@^1.1.0:
+unicount@^1.1.0, unicount@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/unicount/-/unicount-1.2.0.tgz#704dec56e5ce439f3ddef2383fae22881dc43c3f"
   integrity sha512-bbM0gwaKyIPll7smeeufgbN9sbJbrtr29o93HqF+4bzTeQcTN4zKtBKGwnLoGSG+E6gPQ/WL0t7xAhPKnWW4mQ==

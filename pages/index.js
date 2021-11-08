@@ -1,35 +1,53 @@
-import React from 'react'
+import React, { useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { VStack, Heading } from '@chakra-ui/react'
 import { type, insert, remove } from 'ot-text-unicode'
+import { strPosToUni } from 'unicount'
 import { calculateDiff } from 'lib/diff'
 import useSubscriptionOT from 'hooks/useSubscriptionOt'
 const TextArea = dynamic(() => import('components/text-area'), { ssr: false })
 const MarkdownRenderer = dynamic(() => import('components/markdown-renderer'), { ssr: false })
 
 const Posts = () => {
-  const { data, initialValue, submitChange } = useSubscriptionOT('document', '')
+  const [selectionStart, setSelectionStart] = useState(0)
+  const [selectionEnd, setSelectionEnd] = useState(0)
+  const handlePatch = useCallback(patch => {
+    if (!patch.isLocal) {
+      const newSelection = type.transformSelection([strPosToUni(data, selectionStart), strPosToUni(data, selectionEnd)], patch.op)
+      setSelectionStart(newSelection[0])
+      setSelectionEnd(newSelection[1])
+    }
+  }, [selectionStart, selectionEnd])
+  const { data, submitChange } = useSubscriptionOT('document', '', handlePatch)
 
   const handleTextChange = (e) => {
+    setSelectionStart?.(e.target.selectionStart)
+    setSelectionEnd?.(e.target.selectionEnd)
+    e.target.setSelectionRange(selectionStart, selectionEnd)
     if (submitChange) {
       const diff = calculateDiff(data, e.target.value)
-      const op = []
+      if (!diff.del && diff.ins === '') {
+        return
+      }
+
+      const ops = []
 
       if (diff.del) {
-        op.push(remove(diff.pos, diff.del))
+        ops.push(...remove(diff.pos, diff.del))
       }
 
-      if (diff.ins !== '') {
-        op.push(insert(diff.pos, diff.ins))
+      if (diff.ins) {
+        ops.push(...insert(diff.pos, diff.ins))
       }
-      submitChange(op.length > 1 ? type.compose(...op) : op[0])
+
+      submitChange(ops)
     }
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-      <TextArea value={data || ''} onChange={handleTextChange} />
+      <TextArea value={data} onChange={handleTextChange} selectionStart={selectionStart} selectionEnd={selectionEnd} />
       <MarkdownRenderer source={data || ''} />
     </div>
   )

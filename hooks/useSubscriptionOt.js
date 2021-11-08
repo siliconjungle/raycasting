@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { subscribeOT } from 'lib/ot'
 
-const useSubscriptionOT = (route, defaultValue) => {
+const useSubscriptionOT = (route, defaultValue, onPatch) => {
   const [submitChange, setSubmitChange] = useState(null)
   const [data, setData] = useState(defaultValue)
-  const [initialValue, setInitialValue] = useState(defaultValue)
 
   const fetchData = async () => {
     const {
@@ -12,12 +11,11 @@ const useSubscriptionOT = (route, defaultValue) => {
       initialValue: initialValueInner,
       submitChange: submitChangeInner,
     } = await subscribeOT(`http://localhost:3000/api/${route}`)
-    setData(initialValue)
-    setInitialValue(initialValueInner)
+    setData(initialValueInner)
     setSubmitChange({ submitChange: submitChangeInner })
-    for await (const innerData of patches) {
-      setData(innerData.value)
-      console.log('_INNER_DATA_', innerData)
+    for await (const patch of patches) {
+      setData(patch.value)
+      onPatch?.(patch)
     }
   }
 
@@ -27,7 +25,6 @@ const useSubscriptionOT = (route, defaultValue) => {
 
   return {
     data,
-    initialValue,
     submitChange: submitChange?.submitChange,
   }
 }
