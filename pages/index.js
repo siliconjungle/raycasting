@@ -1,67 +1,52 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
+import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { VStack, Heading } from '@chakra-ui/react'
-import axios from 'axios'
-import { subscribe } from '@braid-protocol/client'
-import { autoId } from 'lib/crypto'
-import CreatePost from 'components/create-post'
-// import AutoResizeTextAreaDraftJs from 'components/auto-resize-text-area-draftjs'
-import Post from 'components/post'
-// import Card from 'components/card'
+import { type, insert, remove } from 'ot-text-unicode'
+import { calculateDiff } from 'lib/diff'
+import useSubscriptionOT from 'hooks/useSubscriptionOt'
+const TextArea = dynamic(() => import('components/text-area'), { ssr: false })
+const MarkdownRenderer = dynamic(() => import('components/markdown-renderer'), { ssr: false })
 
-const useSubscription = (route, defaultValue) => {
-  const [data, setData] = useState(defaultValue)
+const Posts = () => {
+  const { data, initialValue, submitChange } = useSubscriptionOT('document', '')
 
-  useEffect(() => {
-    subscribe(`http://localhost:3000/api/${route}`)
-      .then(async ({ initialValue, updates }) => {
-        setData(JSON.parse(initialValue))
-        for await (const { value } of updates) {
-          setData(JSON.parse(value))
-        }
-      })
-      .catch(error => {
-        console.log('_ERROR_', error)
-      })
-  }, [route])
-  return data
-}
+  const handleTextChange = (e) => {
+    if (submitChange) {
+      const diff = calculateDiff(data, e.target.value)
+      const op = []
 
-const addPost = async (text) => {
-  const uid = autoId()
-  try {
-    await axios.post(`/api/posts`, {
-      id: uid,
-      text: text,
-    })
-  } catch(error) {
-    console.log('_ERROR_', error)
+      if (diff.del) {
+        op.push(remove(diff.pos, diff.del))
+      }
+
+      if (diff.ins !== '') {
+        op.push(insert(diff.pos, diff.ins))
+      }
+      submitChange(op.length > 1 ? type.compose(...op) : op[0])
+    }
   }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+      <TextArea value={data || ''} onChange={handleTextChange} />
+      <MarkdownRenderer source={data || ''} />
+    </div>
+  )
 }
 
 const Home = () => {
-  const cards = useSubscription('posts', [])
-  const handleAddPost = async (text) => {
-    await addPost(text)
-  }
-
   return (
     <>
       <Head>
         <title>Infinite Dream Machine</title>
-        <meta name="description" content="Explore dreams and aspirations" />
+        <meta name="description" content="Collaborative editing" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
         <VStack spacing={4}>
-          <Heading as="h1">Dreams and aspirations</Heading>
-          {/*<Card p={4}>*/}
-            {/*<AutoResizeTextAreaDraftJs />*/}
-          {/*</Card>*/}
-          <CreatePost addPost={handleAddPost} />
-          {cards.map(({ id, text, date }) => (
-            <Post key={id} id={id} text={text} date={date} />
-          ))}
+          <Heading as="h1">Collaborative editing</Heading>
+          <Posts />
         </VStack>
       </main>
     </>
