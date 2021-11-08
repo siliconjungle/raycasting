@@ -1,7 +1,8 @@
 import * as braid from '@braid-protocol/server'
 import { type } from 'ot-text-unicode'
+import { contentRepository } from 'lib/files'
 
-let doc = ''
+let doc = contentRepository.get()
 
 const history = []
 const clients = new Set()
@@ -39,11 +40,16 @@ const applyPatch = (
     op,
   })
 
+  contentRepository.upsert(doc)
+
   broadcastMessage(op, version, patchId)
 }
 
 const getDocument = (req, res) => {
   if (req.headers.subscribe === 'keep-alive') {
+    if (!clients.length) {
+      doc = contentRepository.get()
+    }
     const stream = braid.stream(res, {
       reqHeaders: req.headers,
       initialValue: doc,
@@ -54,7 +60,9 @@ const getDocument = (req, res) => {
         if (stream) clients.delete(stream)
       },
     })
-    if (stream) clients.add(stream)
+    if (stream) {
+      clients.add(stream)
+    }
   } else {
     res.end()
   }
