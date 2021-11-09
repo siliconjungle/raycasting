@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/router'
 import Head from 'next/head'
 import { VStack, Heading } from '@chakra-ui/react'
 import { type, insert, remove } from 'ot-text-unicode'
@@ -9,7 +10,7 @@ import useSubscriptionOT from 'hooks/useSubscriptionOt'
 const TextArea = dynamic(() => import('components/text-area'), { ssr: false })
 const MarkdownRenderer = dynamic(() => import('components/markdown-renderer'), { ssr: false })
 
-const Posts = () => {
+const Content = ({ route }) => {
   const [selectionStart, setSelectionStart] = useState(0)
   const [selectionEnd, setSelectionEnd] = useState(0)
   // This needs to be reworked, it is dependent on data which is dependent on handle patch.
@@ -20,7 +21,7 @@ const Posts = () => {
       setSelectionEnd(newSelection[1])
     }
   }, [selectionStart, selectionEnd])
-  const { data, submitChange } = useSubscriptionOT('', '', handlePatch)
+  const { data, submitChange } = useSubscriptionOT(route, '', handlePatch)
 
   const handleTextChange = (e) => {
     setSelectionStart?.(e.target.selectionStart)
@@ -55,6 +56,11 @@ const Posts = () => {
 }
 
 const Home = () => {
+  const router = useRouter()
+  const { route } = router.query
+
+  console.log('_DOES_THIS_WORK?_', route)
+
   return (
     <>
       <Head>
@@ -65,7 +71,7 @@ const Home = () => {
       <main>
         <VStack spacing={4}>
           <Heading as="h1">Collaborative editing</Heading>
-          <Posts />
+          <Content route={route} />
         </VStack>
       </main>
     </>

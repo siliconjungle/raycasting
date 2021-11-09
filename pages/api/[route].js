@@ -1,13 +1,8 @@
-import * as braid from '@braid-protocol/server'
 import { type } from 'ot-text-unicode'
 import { contentRepository } from 'lib/files'
+import { routesRepository } from 'lib/routes'
 
-let doc = contentRepository.get()
-
-const history = []
-const clients = new Set()
-
-const broadcastMessage = (op, version, patchId) => {
+const broadcastMessage = (clients, history, op, version, patchId) => {
   for (const c of clients) {
     c.append({
       patchId,
@@ -20,10 +15,13 @@ const broadcastMessage = (op, version, patchId) => {
 }
 
 const applyPatch = (
+  route,
   op,
   version,
   patchId,
 ) => {
+  const routeData = routesRepository.getRouteData(route)
+  const { doc, history, clients } = routeData
   if (version > history.length) throw Error('Invalid version')
 
   while (version < history.length) {
@@ -33,36 +31,22 @@ const applyPatch = (
     version++
   }
 
-  doc = type.apply(doc, op)
+  // I should probably make all of this more functional.
+  routeData.doc = type.apply(doc, op)
 
   history.push({
     id: patchId,
     op,
   })
 
-  contentRepository.upsert(doc)
-
-  broadcastMessage(op, version, patchId)
+  contentRepository.upsert(route, { doc, history })
+  broadcastMessage(clients, history, op, version, patchId)
 }
 
 const getDocument = (req, res) => {
   if (req.headers.subscribe === 'keep-alive') {
-    if (!clients.length) {
-      doc = contentRepository.get()
-    }
-    const stream = braid.stream(res, {
-      reqHeaders: req.headers,
-      initialValue: doc,
-      initialVerson: `${history.length}`,
-      contentType: 'text/plain',
-      patchType: type.name,
-      onclose() {
-        if (stream) clients.delete(stream)
-      },
-    })
-    if (stream) {
-      clients.add(stream)
-    }
+    const { route } = req.query
+    routesRepository.connectToRoute(req, res, route)
   } else {
     res.end()
   }
@@ -90,7 +74,8 @@ const putDocument = (req, res) => {
   const opId = req.headers['patch-id']
 
   try {
-    applyPatch(JSON.parse(op), version, opId)
+    const { route } = req.query
+    applyPatch(route, JSON.parse(op), version, opId)
   } catch (e) {
     res.end(e.message)
   }
@@ -98,7 +83,15 @@ const putDocument = (req, res) => {
   res.end()
 }
 
+const validateQuery = query => {
+  return typeof query?.route === 'string'
+}
+
 const handler = async (req, res) => {
+  if (!(validateQuery(req.query))) {
+    return res.status(405).send({ error: 'Invalid request' })
+  }
+
   if (req.method === 'GET') {
     getDocument(req, res)
   } else if (req.method === 'PUT') {
