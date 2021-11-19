@@ -1,0 +1,11 @@
+{
+  "doc": "",
+  "history": [
+    {
+      "id": "08775974252113028",
+      "op": [
+        "# Game improvements\n- Only do re-renders when something on screen changes (conditionally re-render based on what has changed e.g. animations for sprites should cause a re-render of the environment. It would be worthwhile splitting different segments into separate image renders so this can be optimised).\n- Link this content here to the level layout. To begin with, it will just be a raw 2D array, in the future it can be turned into a little editor.\n- Have a way to pause\n- Only listen to inputs if the game is currently selected\n- Add a way for the player to send messages to other players\n- Network the positions of players\n- Fix bug where the sprites render behind walls (the depth detection needs a rework).\n- Add an animation system.\n- Implement shelf for state management.\n- Fix bug where the walls stretch if you're too close (perhaps it's just a collision issue?)\n- Add shadows beneath players\n- Add doors\n- Add portals\n- Add glass\n- Make third person camera\n- Add 1,4 and 8 directional sprites\n"
+      ]
+    }
+  ]
+}
